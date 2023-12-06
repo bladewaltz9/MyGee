@@ -21,6 +21,10 @@ func main() {
 		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
 	})
 
+	gee.GET("/hello/:name/:age", func(c *Gee.Context) {
+		c.String(http.StatusOK, "hello %s, you're at %s, your age is %s\n", c.Param("name"), c.Path, c.Param("age"))
+	})
+
 	gee.GET("/assets/*filepath", func(c *Gee.Context) {
 		c.JSON(http.StatusOK, Gee.H{"filepath": c.Param("filepath")})
 	})

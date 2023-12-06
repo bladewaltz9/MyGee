@@ -1,6 +1,9 @@
 package Gee
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type node struct {
 	pattern  string // Route to be matched
@@ -12,8 +15,11 @@ type node struct {
 // get first matching children node to insert
 func (n *node) getFirstMatchChild(part string) *node {
 	for _, child := range n.children {
-		if child.part == part || child.isWild {
+		if child.part == part {
 			return child
+		}
+		if child.isWild {
+			panic("router conflicts")
 		}
 	}
 	return nil
@@ -33,6 +39,7 @@ func (n *node) getAllMatchChild(part string) []*node {
 func (n *node) insert(pattern string, parts []string, height int) {
 	if len(parts) == height {
 		n.pattern = pattern
+		fmt.Println(n)
 		return
 	}
 
@@ -43,6 +50,10 @@ func (n *node) insert(pattern string, parts []string, height int) {
 			part:   part,
 			isWild: part[0] == ':' || part[0] == '*',
 		}
+		if child.isWild && len(n.children) > 0 {
+			panic("new path '" + part + "' conflicts with existing path '" + n.children[0].part + "'")
+		}
+
 		n.children = append(n.children, child)
 	}
 	child.insert(pattern, parts, height+1)
