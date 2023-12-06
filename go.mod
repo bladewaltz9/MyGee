@@ -1,3 +1,3 @@
-module github.com/bladewaltz9/demo_Gee
+module github.com/bladewaltz9/MyGee
 
 go 1.21.2

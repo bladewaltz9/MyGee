@@ -17,6 +17,14 @@ func main() {
 		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
 
+	gee.GET("/hello/:name", func(c *Gee.Context) {
+		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
+	})
+
+	gee.GET("/assets/*filepath", func(c *Gee.Context) {
+		c.JSON(http.StatusOK, Gee.H{"filepath": c.Param("filepath")})
+	})
+
 	gee.POST("/login", func(c *Gee.Context) {
 		c.JSON(http.StatusOK, Gee.H{
 			"username": c.PostForm("username"),
@@ -24,5 +32,5 @@ func main() {
 		})
 	})
 
-	gee.Run(":10000")
+	gee.Run(":8080")
 }
