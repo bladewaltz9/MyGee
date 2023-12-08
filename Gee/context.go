@@ -81,8 +81,8 @@ func (c *Context) Data(code int, data []byte) {
 func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Context-Type", "text/html")
 	c.Status(code)
-	// c.Writer.Write([]byte(html))
 	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
+		// TODO: if error occurred, WriteHeader will be excuted twice.
 		c.Fail(500, err.Error())
 	}
 }
