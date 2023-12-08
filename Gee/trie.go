@@ -1,7 +1,6 @@
 package Gee
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -39,7 +38,7 @@ func (n *node) getAllMatchChild(part string) []*node {
 func (n *node) insert(pattern string, parts []string, height int) {
 	if len(parts) == height {
 		n.pattern = pattern
-		fmt.Println(n)
+		// fmt.Println(n)
 		return
 	}
 

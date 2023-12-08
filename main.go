@@ -1,13 +1,24 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/bladewaltz9/Gee"
 )
 
+func onlyForV2() Gee.HandlerFunc {
+	return func(c *Gee.Context) {
+		t := time.Now()
+		c.Fail(500, "Internal Server Error")
+		log.Printf("[%d] %s in %v for group v2", c.StatusCode, c.Req.RequestURI, time.Since(t))
+	}
+}
+
 func main() {
 	gee := Gee.New()
+	gee.Use(Gee.Logger())
 
 	gee.GET("/", func(c *Gee.Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
@@ -26,6 +37,7 @@ func main() {
 	}
 
 	v2 := gee.Group("/v2")
+	v2.Use(onlyForV2())
 	{
 		v2.GET("/hello/:name", func(c *Gee.Context) {
 			// expect /hello/tom
@@ -40,5 +52,5 @@ func main() {
 		})
 	}
 
-	gee.Run(":8080")
+	gee.Run(":10000")
 }

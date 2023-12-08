@@ -19,6 +19,10 @@ type Context struct {
 
 	// response info
 	StatusCode int
+
+	// middlewares
+	handlers []HandlerFunc
+	index    int
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -27,7 +31,12 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
 	}
+}
+
+func (c *Context) Param(key string) string {
+	return c.Params[key]
 }
 
 func (c *Context) PostForm(key string) string {
@@ -38,7 +47,7 @@ func (c *Context) Query(key string) string {
 	return c.Req.URL.Query().Get(key)
 }
 
-func (c *Context) SetStatusCode(code int) {
+func (c *Context) Status(code int) {
 	c.StatusCode = code
 	c.Writer.WriteHeader(code)
 }
@@ -49,13 +58,13 @@ func (c *Context) SetHeader(key string, value string) {
 
 func (c *Context) String(code int, format string, values ...interface{}) {
 	c.SetHeader("Content-Type", "text/plain")
-	c.SetStatusCode(code)
+	c.Status(code)
 	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
 
 func (c *Context) JSON(code int, obj interface{}) {
 	c.SetHeader("Content-Type", "application/json")
-	c.SetStatusCode(code)
+	c.Status(code)
 	encoder := json.NewEncoder(c.Writer)
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
@@ -63,16 +72,24 @@ func (c *Context) JSON(code int, obj interface{}) {
 }
 
 func (c *Context) Data(code int, data []byte) {
-	c.SetStatusCode(code)
+	c.Status(code)
 	c.Writer.Write(data)
 }
 
 func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Context-Type", "text/html")
-	c.SetStatusCode(code)
+	c.Status(code)
 	c.Writer.Write([]byte(html))
 }
 
-func (c *Context) Param(key string) string {
-	return c.Params[key]
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
+}
+
+func (c *Context) Next() {
+	c.index++
+	for ; c.index < len(c.handlers); c.index++ {
+		c.handlers[c.index](c)
+	}
 }
